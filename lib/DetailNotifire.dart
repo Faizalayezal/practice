@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import 'model/HomeModel.dart';
 import 'model/ReviewItem.dart';
 import 'model/ServiceProvider.dart';
 import 'network_manager/repository.dart';
@@ -10,6 +11,72 @@ final quantityProvider = StateProvider<int>((ref) => 1);
 
 // --- REPOSITORY PROVIDER ---
 final repositoryProvider = Provider<Repository>((ref) => Repository());
+
+// --- HOME STATE & NOTIFIER ---
+class HomeState {
+  final bool isLoading;
+  final HomeResponseModel? homeData;
+  final String? error;
+
+  HomeState({
+    this.isLoading = false,
+    this.homeData,
+    this.error,
+  });
+
+  HomeState copyWith({
+    bool? isLoading,
+    HomeResponseModel? homeData,
+    String? error,
+  }) {
+    return HomeState(
+      isLoading: isLoading ?? this.isLoading,
+      homeData: homeData ?? this.homeData,
+      error: error,
+    );
+  }
+}
+
+class HomeNotifier extends StateNotifier<HomeState> {
+  final Repository _repository;
+
+  HomeNotifier(this._repository) : super(HomeState());
+
+  Future<void> fetchHomeData({
+    required int userId,
+    required String accessToken,
+    required int serviceCategoryId,
+    required double lat,
+    required double long,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final response = await _repository.getHomeData(
+        userId: userId,
+        accessToken: accessToken,
+        serviceCategoryId: serviceCategoryId,
+        lat: lat,
+        long: long,
+      );
+
+      state = state.copyWith(
+        isLoading: false,
+        homeData: response,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
+}
+
+final homeNotifierProvider =
+    StateNotifierProvider<HomeNotifier, HomeState>((ref) {
+  return HomeNotifier(ref.watch(repositoryProvider));
+});
 
 // --- PACKAGE STATE & NOTIFIER ---
 class PackageState {

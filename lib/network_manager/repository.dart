@@ -1,7 +1,5 @@
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-
 import '../constant/api_constants.dart';
+import '../model/HomeModel.dart';
 import '../model/ReviewItem.dart';
 import 'dio_helper.dart';
 
@@ -18,30 +16,29 @@ class Repository {
     }
   }*/
 
- /* Future<RegisterResponse> register({required String mobileNo}) async {
+  Future<HomeResponseModel> getHomeData({
+    required int userId,
+    required String accessToken,
+    required int serviceCategoryId,
+    required double lat,
+    required double long,
+  }) async {
     try {
       final response = await _dioHelper.post(
-        url: ApiConstants.register,
-        requestBody: {'mobileno': mobileNo},
+        url: ApiConstants.home,
+        requestBody: {
+          'user_id': userId,
+          'access_token': accessToken,
+          'service_category_id': serviceCategoryId,
+          'lat': lat,
+          'long': long,
+        },
       );
-      return RegisterResponse.fromJson(response);
+      return HomeResponseModel.fromJson(response);
     } catch (e) {
-      throw Exception('Registration failed: $e');
+      throw Exception('Get home data failed: $e');
     }
   }
-
-
-  Future<List<CategoryModel>> getCategory() async {
-    try {
-
-
-      final response = await _dioHelper.getList(url: ApiConstants.getCategory);
-
-      return response.map((e) => CategoryModel.fromJson(e)).toList();
-    } catch (e) {
-      throw Exception('Get category failed: $e');
-    }
-  }*/
 
   Future<ProviderReviewResponse> getProviderReview({
     required int userId,
@@ -68,12 +65,4 @@ class Repository {
       throw Exception('Get provider reviews failed: $e');
     }
   }
-
-
-
-
-
-
-
-
 }

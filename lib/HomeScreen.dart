@@ -1,18 +1,34 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:foxtask/DetailNotifire.dart';
 import 'package:foxtask/widget/buildItem.dart';
 
 import 'DetailScreen.dart';
 import 'model/ServiceProvider.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      ref.read(homeNotifierProvider.notifier).fetchHomeData(
+            userId: 946,
+            accessToken: "935849072025250773",
+            serviceCategoryId: 19,
+            lat: 22.3187483,
+            long: 70.7671133,
+          );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,15 +40,15 @@ class _HomeScreenState extends State<HomeScreen> {
         scrolledUnderElevation: 4,
         centerTitle: false,
         titleSpacing: 0,
-        leading: Icon(Icons.arrow_back, color: Colors.black),
-        title: Text(
+        leading: const Icon(Icons.arrow_back, color: Colors.black),
+        title: const Text(
           "Home cleaning",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -66,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 16),
               ListView.builder(
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: provider.length,
                 itemBuilder: (context, index) {
                   return buildCategory(context, provider[index], () {
