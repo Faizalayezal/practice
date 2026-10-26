@@ -404,75 +404,135 @@ Widget _buildServiceChip(String text, bool isSelected) {
 }
 
 Widget buildReviewView() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop',
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: 60,
-                  height: 60,
-                  color: Colors.grey.shade300,
-                  child: const Icon(Icons.person, color: Colors.grey),
-                ),
-              ),
+  return Consumer(
+    builder: (context, ref, child) {
+      final state = ref.watch(providerReviewNotifierProvider);
+
+      if (state.isLoading) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 40.0),
+          child: Center(child: CircularProgressIndicator(color: Colors.green)),
+        );
+      }
+
+      if (state.error != null) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(
+            child: Text(
+              'Error loading reviews: ${state.error}',
+              style: const TextStyle(color: Colors.red),
             ),
-            const SizedBox(width: 12),
-            Column(
+          ),
+        );
+      }
+
+      if (state.reviews.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 40.0),
+          child: Center(
+            child: Text(
+              'No reviews available',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+        );
+      }
+
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: state.reviews.length + (state.isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == state.reviews.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: Center(
+                child: CircularProgressIndicator(color: Colors.green),
+              ),
+            );
+          }
+
+          final review = state.reviews[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Ft Jeel',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '27/05/2025',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                const SizedBox(height: 4),
                 Row(
-                  children: List.generate(
-                    5,
-                    (index) => const Icon(
-                      Icons.star,
-                      size: 16,
-                      color: Colors.amber,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        review.userImage,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 50,
+                          height: 50,
+                          color: Colors.grey.shade300,
+                          child: const Icon(Icons.person, color: Colors.grey),
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          review.userName,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          review.date,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: List.generate(
+                            5,
+                            (starIndex) => Icon(
+                              Icons.star,
+                              size: 14,
+                              color: starIndex < review.rating
+                                  ? Colors.amber
+                                  : Colors.grey.shade300,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  review.comment,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.black87,
+                    height: 1.4,
                   ),
                 ),
+                const Divider(height: 24),
               ],
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          "I couldn't be happier with the service I received! This is hands-down the best home cleaning and handyman service I've ever used. From the moment I booked, the entire process was smooth, professional, and reliable. The team arrived on time, well-prepared, and ready to tackle everything on my list—from deep cleaning the kitchen and bathrooms to fixing a leaky faucet and assembling a new shelf.",
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.black87,
-            height: 1.4,
-          ),
-        ),
-      ],
-    ),
+          );
+        },
+      );
+    },
   );
 }
 

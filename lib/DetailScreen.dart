@@ -16,9 +16,49 @@ class Detailscreen extends ConsumerStatefulWidget {
 }
 
 class _DetailscreenState extends ConsumerState<Detailscreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Scroll listener tabhi pagination trigger karega jab selectedTabIndex == 1 (Review tab) hoga
+    _scrollController.addListener(() {
+      final selectedTabIndex = ref.read(selectTabProvider);
+      if (selectedTabIndex == 1) {
+        if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200) {
+          ref.read(providerReviewNotifierProvider.notifier).loadMoreReviews(
+                userId: 881,
+                accessToken: "713602132025270532",
+                serviceCategoryId: 19,
+                providerId: int.tryParse(widget.service.id) ?? 42,
+              );
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    print('dfdfgdfgdf');
+    // Review Tab (index == 1) select hone par hi initial API call call hogi
+    ref.listen<int>(selectTabProvider, (previous, next) {
+      if (next == 1) {
+        ref.read(providerReviewNotifierProvider.notifier).fetchInitialReviews(
+              userId: 881,
+              accessToken: "713602132025270532",
+              serviceCategoryId: 19,
+              providerId: int.tryParse(widget.service.id) ?? 42,
+            );
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -36,7 +76,7 @@ class _DetailscreenState extends ConsumerState<Detailscreen> {
             Navigator.pop(context);
           },
         ),
-        title: Text(
+        title: const Text(
           "Select Package",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
@@ -47,6 +87,7 @@ class _DetailscreenState extends ConsumerState<Detailscreen> {
             builder: (context, ref, child) {
               final selectedTabIndex = ref.watch(selectTabProvider);
               return SingleChildScrollView(
+                controller: _scrollController,
                 padding: EdgeInsets.only(
                   bottom: selectedTabIndex == 0 ? 120 : 20,
                 ),
@@ -80,7 +121,7 @@ class _DetailscreenState extends ConsumerState<Detailscreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    if (selectedTabIndex == 0)buildPackageView(),
+                    if (selectedTabIndex == 0) buildPackageView(),
                     if (selectedTabIndex == 1) buildReviewView(),
                     if (selectedTabIndex == 2) buildGalleryView(),
                   ],
